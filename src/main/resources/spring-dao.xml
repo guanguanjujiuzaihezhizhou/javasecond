@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.1.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	
+	<!-- 加载mysql数据库连接的配置文件 -->
+	<context:property-placeholder location="classpath:mysql.properties"/>
+	
+	<!-- 配置阿里的 DruidDataSource数据连接池（连接本地mysql数据[关联mysql.properties文件]），数据源随着spring环境的创建而创建消失而消失，配置初始化和销毁的方法-->
+	<bean id="DruidDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		
+		<!-- 配置数据库连接池的初始化连接个数 -->
+		<property name="initialSize" value="5"></property>
+		
+		<!-- 配置数据库连接池的最大空闲连接数 -->
+		<property name="minIdle" value="1"></property>
+		
+		<!-- 最多连接数 -->
+		<property name="maxActive" value="10"></property>
+	
+		<!-- 超时最大等待时间 -->
+		<property name="maxWait" value="10000"></property>
+		
+		<!-- 检查空闲连接的间隔时间，若间隔时间内没有连接，会回收 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000"></property>
+	
+		<!-- 连接最小的生存时间 -->
+		<property name="minEvictableIdleTimeMillis" value="30000"></property>
+		
+		<!-- 是否在连接池中取出连接前进行检验 -->
+		<property name="testOnBorrow" value="true"></property>
+		<!-- 是否在连接归还到连接池前进行检验 -->
+		<property name="testOnReturn" value="true"></property>
+		<!-- 是否在空闲时间发出检验，防止连接池里任何东西都没有了 -->
+		<property name="testWhileIdle" value="true"></property>
+		<!-- 是否启动连接池预加载状态 -->
+		<property name="poolPreparedStatements" value="true"></property>
+		<!-- 设置连接池预加载最大数量 -->
+		<property name="maxPoolPreparedStatementPerConnectionSize" value="20"></property>
+	</bean>
+	
+	<!-- 配置mybatis和spring连接需要的sqlSessionFactory -->
+	<bean id="SqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 数据源连接池 -->
+		<property name="dataSource" ref="DruidDataSource"></property>
+		<!-- mapper映射文件的路径，它表示我们的Mapper文件存放的位置，当我们的Mapper文件跟对应的Mapper接口处于同一位置的时候可以不用指定该属性的值。 -->
+		<property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+		<!-- mybatis全局配置文件的路径 -->
+		<property name="configLocation" value="classpath:mybatis-config.xml"></property>
+		<!-- 它一般对应我们的实体类所在的包，这个时候会自动取对应包中不包括包名的简单类名作为包括包名的别名 -->
+		<property name="typeAliasesPackage" value="com.offcn.po"></property>
+	</bean>
+	
+	
+	<!-- 配置mybatis和spring整合动态代理dao,它将会查找类路径下的映射器并自动将它们创建成MapperFactoryBean,配置会扫描org.mybatis.spring.sample.mapper下的所有接口，然后创建各自接口的动态代理类。 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="SqlSessionFactoryBean"></property>
+		<property name="basePackage" value="com.offcn.dao"></property>
+	</bean>
+	
+</beans>
