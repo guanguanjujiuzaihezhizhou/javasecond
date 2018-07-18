@@ -17,7 +17,7 @@ public class StuController {
 	@Autowired
 	private StuService stuservice;
 	
-	
+	//ssh修改00000001
 	
 	/*
 	 * 返回学生信息：支持柱状图、折线图
